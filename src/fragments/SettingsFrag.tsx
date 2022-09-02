@@ -207,7 +207,7 @@ const SettingsFrag: React.FC = (props) => {
           <ExcludeAppPicker handleClose={() => setPickerOpened(false)} />
         </Dialog>
 
-        if (getPlatform() === "android") {(
+        {(getPlatform() === "android") ? (
           <>
             <BooleanSetting
               propKey="excludeApps"
@@ -231,7 +231,7 @@ const SettingsFrag: React.FC = (props) => {
               ""
             )}
           </>
-        )} else if (getPlatform() === "electron") {
+        ) : (getPlatform() === "electron" ? (
           <>
             <BooleanSetting
               propKey="vpn"
@@ -255,6 +255,7 @@ const SettingsFrag: React.FC = (props) => {
               icon={<Web />}
             />
           </>
+        ) : "")
         }
       </List>
       <Divider />

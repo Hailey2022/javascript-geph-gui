@@ -244,20 +244,24 @@ const App: React.FC = (props) => {
         }}
       >
         {(() => {
-          switch (activePage) {
-            case 0:
-              return <OverviewFrag forceSync={() => refreshSync(true)} />;
-            // case 1:
-            //   return <Status />;
-            case 1:
-              if (getPlatform() !== "ios") {
+          if (getPlatform() !== "ios") {
+            switch (activePage) {
+              case 0:
+                return <OverviewFrag forceSync={() => refreshSync(true)} />;
+              // case 1:
+              //   return <Status />;
+              case 1:
                 return <Announcements />;
-              } else { return <SettingsFrag />; }
-
-            case 2:
-              if (getPlatform() !== "ios") {
+              case 2:
                 return <SettingsFrag />;
-              }
+            }
+          } else {
+            switch (activePage) {
+              case 0:
+                return <OverviewFrag forceSync={() => refreshSync(true)} />;
+              case 1:
+                return <SettingsFrag />;
+            }
           }
         })()}
       </div>
@@ -274,7 +278,7 @@ const App: React.FC = (props) => {
           label={l10n.status}
           icon={<icons.Dashboard />}
         /> */}
-        if (getPlatform() !== "ios") {
+        (if (getPlatform() !== "ios") {
           <BottomNavigationAction
             label={l10n.announcements}
             icon={
@@ -283,7 +287,7 @@ const App: React.FC = (props) => {
               </Badge>
             }
           />
-        }
+        })
         <BottomNavigationAction
           label={l10n.settings}
           icon={<icons.Settings />}
