@@ -9,7 +9,13 @@ import { getl10n } from "./redux/l10n";
 const isIos = ("ios" in window);
 export const platform = "rpc" in window ? "desktop" : (isIos ? "ios" : "android");
 
-if (!("rpc" in window)) {
+
+if (isIos) {
+  window["rpc"] = {};
+  window["rpc"]["call"] = async (verb, ...args) =>
+    JSON.parse(await window.webkit.messageHandlers[verb].postMessage(JSON.stringify(args)))
+}
+else if (!("rpc" in window)) {
   window["rpc"] = {};
   window["rpc"]["call"] = async (verb, ...args) =>
     JSON.parse(window.Android.executeRpc(verb, JSON.stringify(args)));
