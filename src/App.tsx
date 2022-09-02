@@ -259,7 +259,7 @@ const App: React.FC = (props) => {
             switch (activePage) {
               case 0:
                 return <OverviewFrag forceSync={() => refreshSync(true)} />;
-              case 1:
+              case 2:
                 return <SettingsFrag />;
             }
           }
