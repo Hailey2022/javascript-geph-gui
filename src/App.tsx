@@ -278,7 +278,7 @@ const App: React.FC = (props) => {
           label={l10n.status}
           icon={<icons.Dashboard />}
         /> */}
-        (if (getPlatform() !== "ios") {
+        {(getPlatform() !== "ios") ? (
           <BottomNavigationAction
             label={l10n.announcements}
             icon={
@@ -287,7 +287,7 @@ const App: React.FC = (props) => {
               </Badge>
             }
           />
-        })
+        ) : ""}
         <BottomNavigationAction
           label={l10n.settings}
           icon={<icons.Settings />}
