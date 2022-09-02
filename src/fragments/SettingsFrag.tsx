@@ -280,13 +280,15 @@ const SettingsFrag: React.FC = (props) => {
           icon={<TripOrigin />}
         />
         <>
-          <BooleanSetting
-            propKey="listenAll"
-            defValue={false}
-            primary={l10n.listenall}
-            secondary={l10n.listenallblurb}
-            icon={<WifiTethering />}
-          />
+          {(getPlatform() !== "ios") ? (
+            <BooleanSetting
+              propKey="listenAll"
+              defValue={false}
+              primary={l10n.listenall}
+              secondary={l10n.listenallblurb}
+              icon={<WifiTethering />}
+            />) : ""
+          }
           <List style={{ paddingLeft: 32 }}>
             <ListItem>
               <ListItemText primary={l10n.socks5} />
