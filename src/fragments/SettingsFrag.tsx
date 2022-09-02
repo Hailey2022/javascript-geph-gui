@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  Box,
 } from "@material-ui/core";
 import axios from "axios";
 import { red } from "@material-ui/core/colors";
@@ -30,6 +31,7 @@ import {
   Apps,
   BugReport,
   CallSplit,
+  DeleteForever,
   RedoTwoTone,
   SwapHoriz,
   TripOrigin,
@@ -328,55 +330,64 @@ const SettingsFrag: React.FC = (props) => {
           <ListItemText primary={l10n.version} />
           <span style={{ color: "#666" }}>{version}</span>
         </ListItem>
+        <Divider />
         <ListItem>
-          <Button
-            color="secondary"
-            onClick={() => {
-              if (window.confirm(l10n.confirm)) {
-                (async () => {
-                  startBinderProxy();
+          <ListItemIcon>
+            <DeleteForever />
+          </ListItemIcon>
+          <ListItemText
+            primary={l10n.deleteAccount}
+            secondary={l10n.deleteAccountBlurb}
+            style={{ maxWidth: "60vw" }}
+          />
+          <ListItemSecondaryAction>
+            <Button
+              color="secondary"
+              onClick={() => {
+                if (window.confirm(l10n.confirm)) {
+                  (async () => {
+                    startBinderProxy();
 
-                  const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
-                  axiosRetry(proxClient, {
-                    retries: 1000,
-                    retryDelay: exponentialDelay,
-                  });
-
-                  await new Promise(r => setTimeout(r, 2000));
-
-                  // // this is a Promise that resolves to "3"
-                  // let threePromise = new Promise(function (ret){ret(3)})
-
-                  // saves the current state
-                  // makes a closure, that when called, resumes the current state
-                  // calls the ret => ret(3) function inside the promise with this magical closure as its "ret" argument
-                  // that function calls its argument, which then resumes the current state
-                  // await threePromise
-
-                  try {
-                    const resp = await axios.post("http://127.0.0.1:23456/delete_account", {
-                      Username: username,
-                      Password: password,
+                    const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
+                    axiosRetry(proxClient, {
+                      retries: 1000,
+                      retryDelay: exponentialDelay,
                     });
 
-                  } catch (e) {
-                    const s = ["Failed to delete account!\n", e].concat();
-                    alert(s);
-                    return;
-                  }
-                  // logout
-                  localStorage.clear();
-                  dispatch({ type: "CONN", rawJson: SpecialConnStates.Dead });
-                  stopDaemon();
-                  dispatch({ type: "PREF", key: "username", value: "" });
-                  dispatch({ type: "PREF", key: "password", value: "" });
-                })()
-              }
-              // first delete account
-              // then log out
-            }}>
-            {l10n.deleteAccount}
-          </Button>
+                    await new Promise(r => setTimeout(r, 2000));
+
+                    // // this is a Promise that resolves to "3"
+                    // let threePromise = new Promise(function (ret){ret(3)})
+
+                    // saves the current state
+                    // makes a closure, that when called, resumes the current state
+                    // calls the ret => ret(3) function inside the promise with this magical closure as its "ret" argument
+                    // that function calls its argument, which then resumes the current state
+                    // await threePromise
+
+                    try {
+                      const resp = await axios.post("http://127.0.0.1:23456/delete_account", {
+                        Username: username,
+                        Password: password,
+                      });
+
+                    } catch (e) {
+                      const s = ["Failed to delete account!\n", e].concat();
+                      alert(s);
+                      return;
+                    }
+                    // logout
+                    localStorage.clear();
+                    dispatch({ type: "CONN", rawJson: SpecialConnStates.Dead });
+                    stopDaemon();
+                    dispatch({ type: "PREF", key: "username", value: "" });
+                    dispatch({ type: "PREF", key: "password", value: "" });
+                  })()
+                }
+              }}>
+              {l10n.delete}
+            </Button>
+          </ListItemSecondaryAction>
         </ListItem>
       </List>
       <div style={{ height: 50 }} />
