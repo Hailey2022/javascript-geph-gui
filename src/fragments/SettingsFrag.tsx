@@ -16,18 +16,21 @@ import {
   DialogContent,
   DialogContentText,
 } from "@material-ui/core";
+import axios from "axios";
+import { red } from "@material-ui/core/colors";
 import { useSelector, useDispatch } from "react-redux";
 import { l10nSelector, langSelector } from "../redux/l10n";
 import { prefSelector } from "../redux/prefs";
 import { version } from "../../package.json";
-import { exportLogs, getPlatform, isAdmin, isWindows } from "../nativeGate";
+import { exportLogs, getPlatform, isAdmin, isWindows, startBinderProxy } from "../nativeGate";
 import { GlobalState } from "../redux";
-import { ConnectionStatus } from "../redux/connState";
+import { ConnectionStatus, SpecialConnStates } from "../redux/connState";
 import LanguageIcon from "@material-ui/icons/Language";
 import {
   Apps,
   BugReport,
   CallSplit,
+  RedoTwoTone,
   SwapHoriz,
   TripOrigin,
   Update,
@@ -38,6 +41,8 @@ import {
 import ExcludeAppPicker from "./ExcludeAppPicker";
 
 import adminImage from "../assets/windows-admin.jpg";
+import axiosRetry, { exponentialDelay } from "axios-retry";
+import { stopDaemon } from "../nativeGate";
 
 const BooleanSetting = (props: {
   propKey: string;
@@ -93,7 +98,31 @@ const BooleanSetting = (props: {
 //   );
 // };
 
+
+// const deleteAccount = async () => {
+//   const username = useSelector(prefSelector("username", ""));
+//   const password = useSelector(prefSelector("password", ""));
+
+//   const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
+//   axiosRetry(proxClient, {
+//     retries: 1000,
+//     retryDelay: exponentialDelay,
+//   });
+
+//   startBinderProxy();
+
+//   try {
+//     const resp = await proxClient.post("/delete_account", {
+//       username: username,
+//       password: password,
+//     });
+
+//   } catch (_) { }
+// };
+
 const SettingsFrag: React.FC = (props) => {
+  const username = useSelector(prefSelector("username", ""));
+  const password = useSelector(prefSelector("password", ""));
   const l10n = useSelector(l10nSelector);
   const lang = useSelector(langSelector);
   const listenAll = useSelector(prefSelector("listenAll", false));
@@ -178,7 +207,7 @@ const SettingsFrag: React.FC = (props) => {
           <ExcludeAppPicker handleClose={() => setPickerOpened(false)} />
         </Dialog>
 
-        {getPlatform() === "android" ? (
+        if (getPlatform() === "android") {(
           <>
             <BooleanSetting
               propKey="excludeApps"
@@ -202,7 +231,7 @@ const SettingsFrag: React.FC = (props) => {
               ""
             )}
           </>
-        ) : (
+        )} else if (getPlatform() === "electron") {
           <>
             <BooleanSetting
               propKey="vpn"
@@ -226,7 +255,7 @@ const SettingsFrag: React.FC = (props) => {
               icon={<Web />}
             />
           </>
-        )}
+        }
       </List>
       <Divider />
       <List
@@ -297,6 +326,56 @@ const SettingsFrag: React.FC = (props) => {
           </ListItemIcon>
           <ListItemText primary={l10n.version} />
           <span style={{ color: "#666" }}>{version}</span>
+        </ListItem>
+        <ListItem>
+          <Button
+            color="secondary"
+            onClick={() => {
+              if (window.confirm(l10n.confirm)) {
+                (async () => {
+                  startBinderProxy();
+
+                  const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
+                  axiosRetry(proxClient, {
+                    retries: 1000,
+                    retryDelay: exponentialDelay,
+                  });
+
+                  await new Promise(r => setTimeout(r, 2000));
+
+                  // // this is a Promise that resolves to "3"
+                  // let threePromise = new Promise(function (ret){ret(3)})
+
+                  // saves the current state
+                  // makes a closure, that when called, resumes the current state
+                  // calls the ret => ret(3) function inside the promise with this magical closure as its "ret" argument
+                  // that function calls its argument, which then resumes the current state
+                  // await threePromise
+
+                  try {
+                    const resp = await axios.post("http://127.0.0.1:23456/delete_account", {
+                      Username: username,
+                      Password: password,
+                    });
+
+                  } catch (e) {
+                    const s = ["Failed to delete account!\n", e].concat();
+                    alert(s);
+                    return;
+                  }
+                  // logout
+                  localStorage.clear();
+                  dispatch({ type: "CONN", rawJson: SpecialConnStates.Dead });
+                  stopDaemon();
+                  dispatch({ type: "PREF", key: "username", value: "" });
+                  dispatch({ type: "PREF", key: "password", value: "" });
+                })()
+              }
+              // first delete account
+              // then log out
+            }}>
+            {l10n.deleteAccount}
+          </Button>
         </ListItem>
       </List>
       <div style={{ height: 50 }} />

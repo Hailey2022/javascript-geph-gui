@@ -6,7 +6,8 @@ import { exit } from "process";
 import semver from "semver";
 import { getl10n } from "./redux/l10n";
 
-export const platform = "rpc" in window ? "desktop" : "android";
+const isIos = ("ios" in window);
+export const platform = "rpc" in window ? "desktop" : (isIos ? "ios" : "android");
 
 if (!("rpc" in window)) {
   window["rpc"] = {};
@@ -32,7 +33,7 @@ export function exportLogs() {
   window["rpc"].call("export_logs", fname);
 }
 
-export function startUpdateChecks(l10n) {}
+export function startUpdateChecks(l10n) { }
 
 var DAEMON_RUNNING = false;
 
@@ -51,7 +52,7 @@ export async function syncStatus(uname, pwd, force) {
     pwd,
     force
   );
-  for (;;) {
+  for (; ;) {
     const result = await window["rpc"].call("check_sync_status", sync_id);
     if (result) {
       console.log("gotten: " + JSON.stringify(result));

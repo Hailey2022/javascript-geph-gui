@@ -39,6 +39,7 @@ import {
   getVersion,
   syncStatus,
   stopDaemon,
+  getPlatform,
 } from "./nativeGate";
 import Announcements, { getAnnouncementFeed } from "./fragments/Announcements";
 
@@ -124,7 +125,7 @@ const App: React.FC = (props) => {
       try {
         flag = true;
         const boo = (async () => {
-          for (;;) {
+          for (; ;) {
             await new Promise((resolve) => setTimeout(resolve, 2000));
             if (flag) {
               setBusy(true);
@@ -249,9 +250,14 @@ const App: React.FC = (props) => {
             // case 1:
             //   return <Status />;
             case 1:
-              return <Announcements />;
+              if (getPlatform() !== "ios") {
+                return <Announcements />;
+              } else { return <SettingsFrag />; }
+
             case 2:
-              return <SettingsFrag />;
+              if (getPlatform() !== "ios") {
+                return <SettingsFrag />;
+              }
           }
         })()}
       </div>
@@ -268,14 +274,16 @@ const App: React.FC = (props) => {
           label={l10n.status}
           icon={<icons.Dashboard />}
         /> */}
-        <BottomNavigationAction
-          label={l10n.announcements}
-          icon={
-            <Badge badgeContent={unreadCount} color="secondary">
-              <icons.Notifications />
-            </Badge>
-          }
-        />
+        if (getPlatform() !== "ios") {
+          <BottomNavigationAction
+            label={l10n.announcements}
+            icon={
+              <Badge badgeContent={unreadCount} color="secondary">
+                <icons.Notifications />
+              </Badge>
+            }
+          />
+        }
         <BottomNavigationAction
           label={l10n.settings}
           icon={<icons.Settings />}
