@@ -23,6 +23,7 @@ import {
   DialogContentText,
   LinearProgress,
   Button,
+  DialogActions,
 } from "@material-ui/core";
 import * as icons from "@material-ui/icons";
 import { rootReducer, GlobalState } from "./redux";
@@ -89,6 +90,11 @@ const App: React.FC = (props) => {
   const [activePage, setActivePage] = useState(0);
   const [busy, setBusy] = useState(false);
   const [busyError, setBusyError] = useState("");
+  const [privacyNoticeSeen, setPrivacyNoticeSeenTemporarily] = useState(localStorage.getItem("privacy_notice_seen") ? true : false);
+  const setPrivacyNoticeSeen = (b: boolean) => {
+    setPrivacyNoticeSeenTemporarily(b);
+    localStorage.setItem("privacy_notice_seen", "foo")
+  }
   const statsURL = "http://127.0.0.1:9809";
   const announcements = useSelector(prefSelector("announceCache", []));
   const lastReadAnnounce = useSelector(
@@ -195,7 +201,29 @@ const App: React.FC = (props) => {
   }, [username]);
 
   if (username === "") {
-    return <LoginFrag />;
+    return (
+      <>
+        <Dialog
+          open={!privacyNoticeSeen}>
+          <DialogTitle>
+            What data we collect
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <p>We never modify, redirect, or inject data into users&#39; traffic. We do not keep user activity details of any kind, and maintain the minimum amount of data required to authenticate users, route traffic through Geph servers, and process payments: </p>
+              <p><strong>Username &amp; password</strong>: For every user, we store a username, an Argon2 hardened password hash, and the time at which the user was created. We also keep track of all plus users using opaque subscription IDs. We use this information for user authentication.</p>
+              <p><strong>Transaction history</strong>: We store a list of all payment activity per user, which does not contain any information about the user&#39;s payment method.</p>
+              <p><strong>Ephemeral session data</strong>: We temporarily store, in memory, information required to encrypt your traffic and route it through Geph&#39;s servers. This information is deleted after you disconnect, and is never stored persistently.</p>
+              <p>For more information, see our <a href="https://github.com/geph-official/geph4/wiki/Policies-and-terms">policies &amp; terms of service</a>.</p>
+            </DialogContentText>
+            <DialogActions>
+              <Button color="primary" onClick={() => { setPrivacyNoticeSeen(true) }}>I understand</Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
+        <LoginFrag />
+      </>
+    );
   }
 
   return (

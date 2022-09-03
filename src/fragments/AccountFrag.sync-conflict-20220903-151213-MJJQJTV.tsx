@@ -31,7 +31,7 @@ const AccountFrag = (props: { forceSync: () => void }) => {
     username
   )}&pwd=${encodeURIComponent(password)}`;
   const openBilling = () => {
-    if (getPlatform() !== "desktop") {
+    if (getPlatform() !== "electron") {
       window.location.href = extendURL;
     } else {
       window.open(extendURL, "_blank");

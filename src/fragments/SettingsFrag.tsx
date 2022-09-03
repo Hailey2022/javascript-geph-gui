@@ -16,6 +16,8 @@ import {
   DialogContent,
   DialogContentText,
   Box,
+  Modal,
+  DialogActions,
 } from "@material-ui/core";
 import axios from "axios";
 import { red } from "@material-ui/core/colors";
@@ -143,13 +145,51 @@ const SettingsFrag: React.FC = (props) => {
       value: "false",
     });
   };
-
+  const [showModal, setShowModal] = useState(false);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
   // const [isAdmin, setIsAdmin] = useState(false);
   // (async () => {
   //   setIsAdmin(await isElevated());
   //   alert(await isElevated());
   //   //=> false
   // })();
+
+
+  const handleDeleteAccount = async () => {
+    setDeleteInProgress(true);
+    try {
+      startBinderProxy();
+
+      const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
+      axiosRetry(proxClient, {
+        retries: 1000,
+        retryDelay: exponentialDelay,
+      });
+
+      await new Promise(r => setTimeout(r, 2000));
+
+      try {
+        const resp = await axios.post("http://127.0.0.1:23456/delete_account", {
+          Username: username,
+          Password: password,
+        });
+
+      } catch (e) {
+        const s = ["Failed to delete account!\n", e].concat();
+        alert(s);
+        return;
+      }
+      // log out
+      localStorage.clear();
+      dispatch({ type: "CONN", rawJson: SpecialConnStates.Dead });
+      stopDaemon();
+      dispatch({ type: "PREF", key: "username", value: "" });
+      dispatch({ type: "PREF", key: "password", value: "" });
+    } finally {
+      setShowModal(false);
+      setDeleteInProgress(false);
+    }
+  }
 
   return (
     <>
@@ -345,50 +385,29 @@ const SettingsFrag: React.FC = (props) => {
           <ListItemSecondaryAction>
             <Button
               color="secondary"
-              onClick={() => {
-                if (window.confirm(l10n.confirm)) {
-                  (async () => {
-                    startBinderProxy();
-
-                    const proxClient = axios.create({ baseURL: "http://127.0.0.1:23456" });
-                    axiosRetry(proxClient, {
-                      retries: 1000,
-                      retryDelay: exponentialDelay,
-                    });
-
-                    await new Promise(r => setTimeout(r, 2000));
-
-                    // // this is a Promise that resolves to "3"
-                    // let threePromise = new Promise(function (ret){ret(3)})
-
-                    // saves the current state
-                    // makes a closure, that when called, resumes the current state
-                    // calls the ret => ret(3) function inside the promise with this magical closure as its "ret" argument
-                    // that function calls its argument, which then resumes the current state
-                    // await threePromise
-
-                    try {
-                      const resp = await axios.post("http://127.0.0.1:23456/delete_account", {
-                        Username: username,
-                        Password: password,
-                      });
-
-                    } catch (e) {
-                      const s = ["Failed to delete account!\n", e].concat();
-                      alert(s);
-                      return;
-                    }
-                    // logout
-                    localStorage.clear();
-                    dispatch({ type: "CONN", rawJson: SpecialConnStates.Dead });
-                    stopDaemon();
-                    dispatch({ type: "PREF", key: "username", value: "" });
-                    dispatch({ type: "PREF", key: "password", value: "" });
-                  })()
-                }
-              }}>
+              onClick={() => setShowModal(true)}>
               {l10n.delete}
             </Button>
+            <Dialog
+              open={showModal}
+              aria-describedby="dialog-description"
+            >
+              <DialogContent>
+                <DialogContentText id="dialog-description">
+                  {l10n.confirm}
+                </DialogContentText>
+              </DialogContent>
+
+              <DialogActions>
+                <Button disabled={deleteInProgress} color="primary" onClick={() => setShowModal(false)}>Cancel</Button>
+                <Button
+                  color="secondary"
+                  disabled={deleteInProgress}
+                  onClick={handleDeleteAccount}>
+                  Ok
+                </Button>
+              </DialogActions>
+            </Dialog>
           </ListItemSecondaryAction>
         </ListItem>
       </List>

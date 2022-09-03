@@ -45,6 +45,7 @@ var DAEMON_RUNNING = false;
 
 export function getPlatform() {
   return platform;
+  // return "ios";
 }
 
 export function isWindows() {
