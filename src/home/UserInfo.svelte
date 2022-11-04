@@ -27,51 +27,11 @@
 <div class="userinfo">
   <div class="urow">
     <AccountCircle width="1.5rem" height="1.5rem" color="#666" />
-    <div class="stretch"><b>{username}</b></div>
+    <div class="stretch"><b>Premium</b></div>
     <GButton color={"warning"} inverted onClick={on_logout}>
       {l10n($curr_lang, "logout")}
     </GButton>
   </div>
-  {#if user_info}
-    {#if user_info.level == "free"}
-      <div class="urow">
-        <Heart width="1.5rem" height="1.5rem" color="#b71c1c" />
-        <div class="stretch">{l10n($curr_lang, "get-unlimited-speed")}</div>
-        <GButton inverted onClick={() => window.open(extend_url)}
-          >{l10n($curr_lang, "buy-plus")}</GButton
-        >
-      </div>
-    {:else if user_info.level == "plus" && user_info.expires}
-      <div class="urow">
-        <CalendarRange
-          width="1.5rem"
-          height="1.5rem"
-          color="var(--mdc-theme-primary)"
-        />
-        <div class="stretch">
-          <div class="date">{l10n_date($curr_lang, user_info.expires)}</div>
-          <small class="days-left"
-            >{l10n($curr_lang, "remaining-days")}:
-            <b
-              >{Math.max(
-                0,
-                (user_info.expires.getTime() - new Date().getTime()) /
-                  (24 * 60 * 60 * 1000)
-              ).toFixed(0)}</b
-            ></small
-          >
-        </div>
-        <GButton onClick={() => window.open(extend_url)}>
-          {l10n($curr_lang, "extend")}
-        </GButton>
-      </div>
-    {/if}
-  {:else}
-    <div class="urow">
-      <TimerSandComplete width="1.5rem" height="1.5rem" color="#666" />
-      <div class="stretch">{l10n($curr_lang, "loading")}...</div>
-    </div>
-  {/if}
 </div>
 
 <style>
